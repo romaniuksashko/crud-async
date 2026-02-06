@@ -16,13 +16,10 @@ const formRef = document.getElementById("add-student-form");
 let currentEdit = null;
 
 
-// Функція для отримання всіх студентів
 
 function getStudents() {
   return fetch("http://localhost:3000/students").then((res) => res.json());
 };
-
-
 
 function addStudent(student) {
   const options = {
@@ -53,11 +50,12 @@ function deleteStudent(id) {
 };
 
 
-// Функція для відображення студентів у таблиці
 
 getBtn.addEventListener("click", () => {
   getStudents().then(res => renderStudents(res));
 });
+
+
 
 function renderStudents(students) {
   const item = students.map(({ id, name, age, course, skills, email, isEnrolled }) => {
@@ -80,8 +78,6 @@ function renderStudents(students) {
 
 };
 
-// Функція для додавання нового студента
-
 
 
 formRef.addEventListener("submit", (event) => {
@@ -99,9 +95,6 @@ formRef.addEventListener("submit", (event) => {
     isEnrolled: elements.isEnrolled.checked
   };
 
-  console.log(studentData);
-  
-
   if (currentEdit === null) {
     addStudent(studentData).then(res => {
       formRef.reset();
@@ -116,6 +109,8 @@ formRef.addEventListener("submit", (event) => {
   };
 });
 
+
+
 tableBody.addEventListener("click", (event) => {
   const action = event.target.dataset.action;
   if (!action) {
@@ -127,7 +122,7 @@ tableBody.addEventListener("click", (event) => {
 
   if (action === "delete") {
     deleteStudent(id).then(() => getStudents()).then(res => renderStudents(res));
-  }
+  };
 
   if (action === "edit") {
     currentEdit = id;
@@ -137,8 +132,6 @@ tableBody.addEventListener("click", (event) => {
     formRef.elements.course.value = tr.querySelector(".item-course").textContent;
     formRef.elements.skills.value = tr.querySelector(".item-skills").textContent;
     formRef.elements.email.value = tr.querySelector(".item-email").textContent;
-    formRef.elements.isEnrolled.checked = tr.querySelector(".item-is-enrolled").textContent === "true";
-    // console.log(formRef.elements.isEnrolled.checked);
-    
-  }
+    formRef.elements.isEnrolled.checked = tr.querySelector(".item-is-enrolled").textContent === "true";    
+  };
 });
