@@ -724,14 +724,17 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 // 7.3.Реалізувати форму для додавання нового студента.При натисканні на кнопку "Додати студента"(POST), зібрати дані з полів вводу, сформувати об'єкт з даними  і виконати HTTP-запит POST /students, щоб додати нового студента до бази даних.
 // 7.4.Реалізувати можливість оновлення інформації про студента.Для кожного студента в таблиці додати кнопку "Оновити".При натисканні на цю кнопку, виконати HTTP - запит PUT / students /: id, де : id — ідентифікатор фільму, і відправити оновлені дані про студента на сервер.
 // 7.5.Додати можливість видалення студента.Для кожного студента в таблиці додати кнопку "Видалити".При натисканні на цю кнопку, виконати HTTP - запит DELETE / students /: id.
+// Переписати всі функції які повертають проміс з попередньої ДЗ на асинхронні з використанням try…catch
 const tableBody = document.querySelector("tbody");
 const getBtn = document.getElementById("get-students-btn");
 const formRef = document.getElementById("add-student-form");
 let currentEdit = null;
-function getStudents() {
-    return fetch("http://localhost:3000/students").then((res)=>res.json());
+async function getStudents() {
+    const res = await fetch("http://localhost:3000/students");
+    if (!res.ok) throw new Error("Failed!");
+    return res.json();
 }
-function addStudent(student) {
+async function addStudent(student) {
     const options = {
         method: "POST",
         body: JSON.stringify(student),
@@ -739,9 +742,11 @@ function addStudent(student) {
             "Content-Type": "application/json; charset=UTF-8"
         }
     };
-    return fetch("http://localhost:3000/students", options).then((res)=>res.json());
+    const res = await fetch("http://localhost:3000/students", options);
+    if (!res.ok) throw new Error("Failed!");
+    return res.json();
 }
-function updateStudent(id, student) {
+async function updateStudent(id, student) {
     const options = {
         method: "PUT",
         body: JSON.stringify(student),
@@ -749,15 +754,20 @@ function updateStudent(id, student) {
             "Content-Type": "application/json; charset=UTF-8"
         }
     };
-    return fetch(`http://localhost:3000/students/${id}`, options).then((res)=>res.json());
+    const res = await fetch(`http://localhost:3000/students/${id}`, options);
+    if (!res.ok) throw new Error("Failed!");
+    return res.json();
 }
-function deleteStudent(id) {
-    return fetch(`http://localhost:3000/students/${id}`, {
+async function deleteStudent(id) {
+    const res = await fetch(`http://localhost:3000/students/${id}`, {
         method: "DELETE"
-    }).then((res)=>res.json());
+    });
+    if (!res.ok) throw new Error("Failed!");
+    return res.json();
 }
-getBtn.addEventListener("click", ()=>{
-    getStudents().then((res)=>renderStudents(res));
+getBtn.addEventListener("click", async ()=>{
+    const res = await getStudents();
+    renderStudents(res);
 });
 function renderStudents(students) {
     const item = students.map(({ id, name, age, course, skills, email, isEnrolled })=>{
@@ -777,10 +787,9 @@ function renderStudents(students) {
     }).join("");
     tableBody.innerHTML = item;
 }
-formRef.addEventListener("submit", (event)=>{
+formRef.addEventListener("submit", async (event)=>{
     event.preventDefault();
     const elements = event.currentTarget.elements;
-    console.log(elements);
     const studentData = {
         name: elements.name.value.trim(),
         age: elements.age.value.trim(),
@@ -789,22 +798,33 @@ formRef.addEventListener("submit", (event)=>{
         email: elements.email.value.trim(),
         isEnrolled: elements.isEnrolled.checked
     };
-    if (currentEdit === null) addStudent(studentData).then((res)=>{
+    if (currentEdit === null) {
+        // addStudent(studentData).then(res => {
+        //   formRef.reset();
+        //   getStudents().then(res => renderStudents(res));
+        // });
+        await addStudent(studentData);
         formRef.reset();
-        getStudents().then((res)=>renderStudents(res));
-    });
-    else updateStudent(currentEdit, studentData).then((res)=>{
-        currentEdit = 0;
+        const res = await getStudents();
+        renderStudents(res);
+    } else {
+        await updateStudent(currentEdit, studentData);
         formRef.reset();
-        getStudents().then((res)=>renderStudents(res));
-    });
+        const res = await getStudents();
+        renderStudents(res);
+        currentEdit = null;
+    }
 });
-tableBody.addEventListener("click", (event)=>{
+tableBody.addEventListener("click", async (event)=>{
     const action = event.target.dataset.action;
     if (!action) return;
     const tr = event.target.closest("tr");
     const id = tr.id;
-    if (action === "delete") deleteStudent(id).then(()=>getStudents()).then((res)=>renderStudents(res));
+    if (action === "delete") {
+        await deleteStudent(id);
+        const res = await getStudents();
+        renderStudents(res);
+    }
     if (action === "edit") {
         currentEdit = id;
         formRef.elements.name.value = tr.querySelector(".item-name").textContent;
@@ -816,6 +836,6 @@ tableBody.addEventListener("click", (event)=>{
     }
 });
 
-},{}]},["7wZbQ","2R06K"], "2R06K", "parcelRequirea17c", {})
+},{}]},["7wZbQ","2R06K"], "2R06K", "parcelRequire2fed", {})
 
-//# sourceMappingURL=crud.0f77c784.js.map
+//# sourceMappingURL=crud-async.0f77c784.js.map
