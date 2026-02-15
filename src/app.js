@@ -124,11 +124,6 @@ formRef.addEventListener("submit", async (event) => {
   };
 
   if (currentEdit === null) {
-    // addStudent(studentData).then(res => {
-    //   formRef.reset();
-    //   getStudents().then(res => renderStudents(res));
-    // });
-
     await addStudent(studentData);
     formRef.reset();
     const res = await getStudents();
